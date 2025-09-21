@@ -193,6 +193,74 @@ jobs:
             ./packages/core/*.wasm
           if-no-files-found: error
 
+  build-msys2:
+    name: Build Msys2
+    strategy:
+      matrix:
+        sys: [MINGW64, UCRT64]
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: taiki-e/checkout-action@b13d20b7cda4e2f325ef19895128f7ff735c0b3d # v1.3.1
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.sys }}
+          update: true
+          install: >-
+            base-devel binutils
+          pacboy: >-
+            rustup:p
+            yarn:p
+            toolchain:p
+      - name: Install
+        run: |
+          which cargo
+          which node && node -p "process.report.getReport().header.osName"
+          which rustup && rustup default
+          rustup set default-host x86_64-pc-windows-gnu
+          rustup install stable-x86_64-pc-windows-gnu
+          rustVersion=$(sed -n 's/channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+          rustup install "$rustVersion"
+          rustup default stable-x86_64-pc-windows-gnu
+          rustup override set stable-x86_64-pc-windows-gnu
+          rustup show
+          rustup target add x86_64-pc-windows-gnu 
+          which npm && which corepack
+          corepack enable pnpm
+          # npm install -g pnpm
+          echo $?
+          # npm install -g pnpm@latest-10
+          ls $MINGW_PREFIX/lib/node_modules/corepack/dist
+          # echo $?
+      - name: Build
+        run: |
+          # npm install -g corepack
+          # corepack enable
+          which npm
+          which pnpm
+          sed -i 's|\(@napi-rs/cli": *\).*$|\1"https://github.com/lsq/napi-rs/releases/download/%40napi-rs%2Fcli%403.2.0/napi-rs-cli-3.2.0.tgz"|' pnpm-workspace.yaml
+          sed -i 's|\(@napi-rs/wasm-runtime": *"\).*"|\1https://github.com/lsq/napi-rs/releases/download/%40napi-rs%2Fwasm-runtime%401.0.5/napi-rs-wasm-runtime-1.0.5.tgz"|' package.json 
+          pnpm install -no-frozen-lockfile
+          pnpm --filter=@oxc-node/core build --target x86_64-pc-windows-gnu
+          pnpm --filter=@oxc-node/core export-oxc-runtime
+          pnpm --filter @oxc-node/cli build
+          pnpm rebuild
+          pnpm test
+          rm -rf node_modules
+          rm -rf target
+          ls ./packages/core/
+      - name: Upload artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: bindings-x86_64-pc-windows-gnu
+          path: |
+            ./packages/core/*.node
+            ./packages/core/*.wasm
+          if-no-files-found: error
+
   build-freebsd:
     name: Build FreeBSD
     runs-on: ubuntu-latest

@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.16.1",
   "devDependencies": {
     "@napi-rs/cli": "catalog:",
-    "@napi-rs/wasm-runtime": "^1.0.1",
+    "@napi-rs/wasm-runtime": "https://github.com/lsq/napi-rs/releases/download/%40napi-rs%2Fwasm-runtime%401.0.5/napi-rs-wasm-runtime-1.0.5.tgz",
     "@oxc-node/cli": "workspace:*",
     "@oxc-node/core": "workspace:*",
     "@oxc-project/runtime": "^0.91.0",

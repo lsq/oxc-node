@@ -2,4 +2,4 @@ packages:
   - packages/*
 
 catalog:
-  "@napi-rs/cli": 3.2.0
+  "@napi-rs/cli": "https://github.com/lsq/napi-rs/releases/download/%40napi-rs%2Fcli%403.2.0/napi-rs-cli-3.2.0.tgz"
